@@ -76,11 +76,13 @@ func (c *Client) ReplyInThread(ctx context.Context, messageId string, content st
 	return nil
 }
 
+type textMessage struct {
+	Text string `json:"text"`
+}
+
 // The SDK's MessageTextBuilder does not escape the text it is given, so build the body here.
 func textMessageBody(text string) (string, error) {
-	body, err := json.Marshal(struct {
-		Text string `json:"text"`
-	}{Text: text})
+	body, err := json.Marshal(textMessage{Text: text})
 	if err != nil {
 		return "", err
 	}

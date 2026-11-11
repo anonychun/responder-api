@@ -34,7 +34,7 @@ func (h *WsHandler) OnP2MessageReceiveV1(ctx context.Context, event *larkim.P2Me
 		return nil
 	}
 
-	return h.usecase.HandleMessageReceive(ctx, req)
+	return h.usecase.MessageReceive(ctx, req)
 }
 
 func newMessageReceiveRequest(event *larkim.P2MessageReceiveV1) MessageReceiveRequest {

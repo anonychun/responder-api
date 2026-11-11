@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUsecase_HandleMessageReceive(t *testing.T) {
+func TestUsecase_MessageReceive(t *testing.T) {
 	t.Run("ignores a reply inside a thread", func(t *testing.T) {
 		ctx := context.Background()
 		req := MessageReceiveRequest{
@@ -26,7 +26,7 @@ func TestUsecase_HandleMessageReceive(t *testing.T) {
 		}
 		usecase := &Usecase{}
 
-		err := usecase.HandleMessageReceive(ctx, req)
+		err := usecase.MessageReceive(ctx, req)
 
 		require.NoError(t, err)
 	})
@@ -39,7 +39,7 @@ func TestUsecase_HandleMessageReceive(t *testing.T) {
 		}
 		usecase := &Usecase{}
 
-		err := usecase.HandleMessageReceive(ctx, req)
+		err := usecase.MessageReceive(ctx, req)
 
 		require.NoError(t, err)
 	})
@@ -60,13 +60,15 @@ func TestUsecase_HandleMessageReceive(t *testing.T) {
 			larkMessageRepository: larkMessageRepository,
 		}
 
+		larkMessageRepository.EXPECT().ExistsByMessageId(ctx, req.MessageId).Return(false, nil).Once()
+
 		var stored *entity.LarkMessage
-		larkMessageRepository.EXPECT().CreateIfNotExists(ctx, mock.AnythingOfType("*entity.LarkMessage")).Run(func(ctx context.Context, actual *entity.LarkMessage) {
+		larkMessageRepository.EXPECT().Create(ctx, mock.AnythingOfType("*entity.LarkMessage")).Run(func(ctx context.Context, actual *entity.LarkMessage) {
 			stored = actual
-		}).Return(true, nil).Once()
+		}).Return(nil).Once()
 		riverClient.EXPECT().Insert(ctx, jobLarkReply.Args{MessageId: req.MessageId}).Return(&rivertype.JobInsertResult{}, nil).Once()
 
-		err := usecase.HandleMessageReceive(ctx, req)
+		err := usecase.MessageReceive(ctx, req)
 
 		require.NoError(t, err)
 		require.NotNil(t, stored)
@@ -76,26 +78,39 @@ func TestUsecase_HandleMessageReceive(t *testing.T) {
 		assert.Equal(t, req.Content, stored.Content)
 	})
 
-	t.Run("queues the reply again for a message that is already stored", func(t *testing.T) {
+	t.Run("does nothing for a message that is already stored", func(t *testing.T) {
 		ctx := context.Background()
 		req := MessageReceiveRequest{
 			MessageId: "om_1",
 			Content:   `{"text":"@_user_1 please help"}`,
 			Mentions:  []string{supportTeamHandle},
 		}
-		riverClient := clientRiver.NewMockIClient(t)
 		larkMessageRepository := repositoryLarkMessage.NewMockIRepository(t)
-		usecase := &Usecase{
-			riverClient:           riverClient,
-			larkMessageRepository: larkMessageRepository,
-		}
+		usecase := &Usecase{larkMessageRepository: larkMessageRepository}
 
-		larkMessageRepository.EXPECT().CreateIfNotExists(ctx, mock.AnythingOfType("*entity.LarkMessage")).Return(false, nil).Once()
-		riverClient.EXPECT().Insert(ctx, jobLarkReply.Args{MessageId: req.MessageId}).Return(&rivertype.JobInsertResult{UniqueSkippedAsDuplicate: true}, nil).Once()
+		larkMessageRepository.EXPECT().ExistsByMessageId(ctx, req.MessageId).Return(true, nil).Once()
 
-		err := usecase.HandleMessageReceive(ctx, req)
+		err := usecase.MessageReceive(ctx, req)
 
 		require.NoError(t, err)
+	})
+
+	t.Run("returns the error from checking the message", func(t *testing.T) {
+		ctx := context.Background()
+		req := MessageReceiveRequest{
+			MessageId: "om_1",
+			Content:   `{"text":"@_user_1 please help"}`,
+			Mentions:  []string{supportTeamHandle},
+		}
+		expectedErr := errors.New("check lark message")
+		larkMessageRepository := repositoryLarkMessage.NewMockIRepository(t)
+		usecase := &Usecase{larkMessageRepository: larkMessageRepository}
+
+		larkMessageRepository.EXPECT().ExistsByMessageId(ctx, req.MessageId).Return(false, expectedErr).Once()
+
+		err := usecase.MessageReceive(ctx, req)
+
+		require.ErrorIs(t, err, expectedErr)
 	})
 
 	t.Run("returns the error from storing the message", func(t *testing.T) {
@@ -109,9 +124,10 @@ func TestUsecase_HandleMessageReceive(t *testing.T) {
 		larkMessageRepository := repositoryLarkMessage.NewMockIRepository(t)
 		usecase := &Usecase{larkMessageRepository: larkMessageRepository}
 
-		larkMessageRepository.EXPECT().CreateIfNotExists(ctx, mock.AnythingOfType("*entity.LarkMessage")).Return(false, expectedErr).Once()
+		larkMessageRepository.EXPECT().ExistsByMessageId(ctx, req.MessageId).Return(false, nil).Once()
+		larkMessageRepository.EXPECT().Create(ctx, mock.AnythingOfType("*entity.LarkMessage")).Return(expectedErr).Once()
 
-		err := usecase.HandleMessageReceive(ctx, req)
+		err := usecase.MessageReceive(ctx, req)
 
 		require.ErrorIs(t, err, expectedErr)
 	})
@@ -131,10 +147,11 @@ func TestUsecase_HandleMessageReceive(t *testing.T) {
 			larkMessageRepository: larkMessageRepository,
 		}
 
-		larkMessageRepository.EXPECT().CreateIfNotExists(ctx, mock.AnythingOfType("*entity.LarkMessage")).Return(true, nil).Once()
+		larkMessageRepository.EXPECT().ExistsByMessageId(ctx, req.MessageId).Return(false, nil).Once()
+		larkMessageRepository.EXPECT().Create(ctx, mock.AnythingOfType("*entity.LarkMessage")).Return(nil).Once()
 		riverClient.EXPECT().Insert(ctx, jobLarkReply.Args{MessageId: req.MessageId}).Return(nil, expectedErr).Once()
 
-		err := usecase.HandleMessageReceive(ctx, req)
+		err := usecase.MessageReceive(ctx, req)
 
 		require.ErrorIs(t, err, expectedErr)
 	})

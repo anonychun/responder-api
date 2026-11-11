@@ -47,12 +47,12 @@ func (_m *MockIUsecase) EXPECT() *MockIUsecase_Expecter {
 	return &MockIUsecase_Expecter{mock: &_m.Mock}
 }
 
-// HandleMessageReceive provides a mock function for the type MockIUsecase
-func (_mock *MockIUsecase) HandleMessageReceive(ctx context.Context, req MessageReceiveRequest) error {
+// MessageReceive provides a mock function for the type MockIUsecase
+func (_mock *MockIUsecase) MessageReceive(ctx context.Context, req MessageReceiveRequest) error {
 	ret := _mock.Called(ctx, req)
 
 	if len(ret) == 0 {
-		panic("no return value specified for HandleMessageReceive")
+		panic("no return value specified for MessageReceive")
 	}
 
 	var r0 error
@@ -64,19 +64,19 @@ func (_mock *MockIUsecase) HandleMessageReceive(ctx context.Context, req Message
 	return r0
 }
 
-// MockIUsecase_HandleMessageReceive_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'HandleMessageReceive'
-type MockIUsecase_HandleMessageReceive_Call struct {
+// MockIUsecase_MessageReceive_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MessageReceive'
+type MockIUsecase_MessageReceive_Call struct {
 	*mock.Call
 }
 
-// HandleMessageReceive is a helper method to define mock.On call
+// MessageReceive is a helper method to define mock.On call
 //   - ctx context.Context
 //   - req MessageReceiveRequest
-func (_e *MockIUsecase_Expecter) HandleMessageReceive(ctx any, req any) *MockIUsecase_HandleMessageReceive_Call {
-	return &MockIUsecase_HandleMessageReceive_Call{Call: _e.mock.On("HandleMessageReceive", ctx, req)}
+func (_e *MockIUsecase_Expecter) MessageReceive(ctx any, req any) *MockIUsecase_MessageReceive_Call {
+	return &MockIUsecase_MessageReceive_Call{Call: _e.mock.On("MessageReceive", ctx, req)}
 }
 
-func (_c *MockIUsecase_HandleMessageReceive_Call) Run(run func(ctx context.Context, req MessageReceiveRequest)) *MockIUsecase_HandleMessageReceive_Call {
+func (_c *MockIUsecase_MessageReceive_Call) Run(run func(ctx context.Context, req MessageReceiveRequest)) *MockIUsecase_MessageReceive_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -94,12 +94,12 @@ func (_c *MockIUsecase_HandleMessageReceive_Call) Run(run func(ctx context.Conte
 	return _c
 }
 
-func (_c *MockIUsecase_HandleMessageReceive_Call) Return(err error) *MockIUsecase_HandleMessageReceive_Call {
+func (_c *MockIUsecase_MessageReceive_Call) Return(err error) *MockIUsecase_MessageReceive_Call {
 	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockIUsecase_HandleMessageReceive_Call) RunAndReturn(run func(ctx context.Context, req MessageReceiveRequest) error) *MockIUsecase_HandleMessageReceive_Call {
+func (_c *MockIUsecase_MessageReceive_Call) RunAndReturn(run func(ctx context.Context, req MessageReceiveRequest) error) *MockIUsecase_MessageReceive_Call {
 	_c.Call.Return(run)
 	return _c
 }

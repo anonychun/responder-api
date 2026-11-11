@@ -29,7 +29,7 @@ func TestWsHandler_OnP2MessageReceiveV1(t *testing.T) {
 		usecase := NewMockIUsecase(t)
 		handler := &WsHandler{usecase: usecase}
 
-		usecase.EXPECT().HandleMessageReceive(ctx, MessageReceiveRequest{
+		usecase.EXPECT().MessageReceive(ctx, MessageReceiveRequest{
 			MessageId: "om_1",
 			ChatId:    "oc_1",
 			SenderId:  "on_1",
@@ -57,7 +57,7 @@ func TestWsHandler_OnP2MessageReceiveV1(t *testing.T) {
 		usecase := NewMockIUsecase(t)
 		handler := &WsHandler{usecase: usecase}
 
-		usecase.EXPECT().HandleMessageReceive(ctx, MessageReceiveRequest{
+		usecase.EXPECT().MessageReceive(ctx, MessageReceiveRequest{
 			MessageId: "om_1",
 			SenderId:  "ou_1",
 		}).Return(nil).Once()
@@ -85,7 +85,7 @@ func TestWsHandler_OnP2MessageReceiveV1(t *testing.T) {
 		usecase := NewMockIUsecase(t)
 		handler := &WsHandler{usecase: usecase}
 
-		usecase.EXPECT().HandleMessageReceive(ctx, MessageReceiveRequest{MessageId: "om_1"}).Return(expectedErr).Once()
+		usecase.EXPECT().MessageReceive(ctx, MessageReceiveRequest{MessageId: "om_1"}).Return(expectedErr).Once()
 
 		err := handler.OnP2MessageReceiveV1(ctx, event)
 

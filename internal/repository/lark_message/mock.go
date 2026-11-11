@@ -48,45 +48,36 @@ func (_m *MockIRepository) EXPECT() *MockIRepository_Expecter {
 	return &MockIRepository_Expecter{mock: &_m.Mock}
 }
 
-// CreateIfNotExists provides a mock function for the type MockIRepository
-func (_mock *MockIRepository) CreateIfNotExists(ctx context.Context, larkMessage *entity.LarkMessage) (bool, error) {
+// Create provides a mock function for the type MockIRepository
+func (_mock *MockIRepository) Create(ctx context.Context, larkMessage *entity.LarkMessage) error {
 	ret := _mock.Called(ctx, larkMessage)
 
 	if len(ret) == 0 {
-		panic("no return value specified for CreateIfNotExists")
+		panic("no return value specified for Create")
 	}
 
-	var r0 bool
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *entity.LarkMessage) (bool, error)); ok {
-		return returnFunc(ctx, larkMessage)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *entity.LarkMessage) bool); ok {
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *entity.LarkMessage) error); ok {
 		r0 = returnFunc(ctx, larkMessage)
 	} else {
-		r0 = ret.Get(0).(bool)
+		r0 = ret.Error(0)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *entity.LarkMessage) error); ok {
-		r1 = returnFunc(ctx, larkMessage)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
+	return r0
 }
 
-// MockIRepository_CreateIfNotExists_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateIfNotExists'
-type MockIRepository_CreateIfNotExists_Call struct {
+// MockIRepository_Create_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Create'
+type MockIRepository_Create_Call struct {
 	*mock.Call
 }
 
-// CreateIfNotExists is a helper method to define mock.On call
+// Create is a helper method to define mock.On call
 //   - ctx context.Context
 //   - larkMessage *entity.LarkMessage
-func (_e *MockIRepository_Expecter) CreateIfNotExists(ctx any, larkMessage any) *MockIRepository_CreateIfNotExists_Call {
-	return &MockIRepository_CreateIfNotExists_Call{Call: _e.mock.On("CreateIfNotExists", ctx, larkMessage)}
+func (_e *MockIRepository_Expecter) Create(ctx any, larkMessage any) *MockIRepository_Create_Call {
+	return &MockIRepository_Create_Call{Call: _e.mock.On("Create", ctx, larkMessage)}
 }
 
-func (_c *MockIRepository_CreateIfNotExists_Call) Run(run func(ctx context.Context, larkMessage *entity.LarkMessage)) *MockIRepository_CreateIfNotExists_Call {
+func (_c *MockIRepository_Create_Call) Run(run func(ctx context.Context, larkMessage *entity.LarkMessage)) *MockIRepository_Create_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -104,12 +95,78 @@ func (_c *MockIRepository_CreateIfNotExists_Call) Run(run func(ctx context.Conte
 	return _c
 }
 
-func (_c *MockIRepository_CreateIfNotExists_Call) Return(b bool, err error) *MockIRepository_CreateIfNotExists_Call {
+func (_c *MockIRepository_Create_Call) Return(err error) *MockIRepository_Create_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockIRepository_Create_Call) RunAndReturn(run func(ctx context.Context, larkMessage *entity.LarkMessage) error) *MockIRepository_Create_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ExistsByMessageId provides a mock function for the type MockIRepository
+func (_mock *MockIRepository) ExistsByMessageId(ctx context.Context, messageId string) (bool, error) {
+	ret := _mock.Called(ctx, messageId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ExistsByMessageId")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (bool, error)); ok {
+		return returnFunc(ctx, messageId)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) bool); ok {
+		r0 = returnFunc(ctx, messageId)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, messageId)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockIRepository_ExistsByMessageId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ExistsByMessageId'
+type MockIRepository_ExistsByMessageId_Call struct {
+	*mock.Call
+}
+
+// ExistsByMessageId is a helper method to define mock.On call
+//   - ctx context.Context
+//   - messageId string
+func (_e *MockIRepository_Expecter) ExistsByMessageId(ctx any, messageId any) *MockIRepository_ExistsByMessageId_Call {
+	return &MockIRepository_ExistsByMessageId_Call{Call: _e.mock.On("ExistsByMessageId", ctx, messageId)}
+}
+
+func (_c *MockIRepository_ExistsByMessageId_Call) Run(run func(ctx context.Context, messageId string)) *MockIRepository_ExistsByMessageId_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockIRepository_ExistsByMessageId_Call) Return(b bool, err error) *MockIRepository_ExistsByMessageId_Call {
 	_c.Call.Return(b, err)
 	return _c
 }
 
-func (_c *MockIRepository_CreateIfNotExists_Call) RunAndReturn(run func(ctx context.Context, larkMessage *entity.LarkMessage) (bool, error)) *MockIRepository_CreateIfNotExists_Call {
+func (_c *MockIRepository_ExistsByMessageId_Call) RunAndReturn(run func(ctx context.Context, messageId string) (bool, error)) *MockIRepository_ExistsByMessageId_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -17,7 +17,7 @@ func init() {
 }
 
 type IUsecase interface {
-	HandleMessageReceive(ctx context.Context, req MessageReceiveRequest) error
+	MessageReceive(ctx context.Context, req MessageReceiveRequest) error
 }
 
 type Usecase struct {
@@ -34,8 +34,17 @@ func NewUsecase(i do.Injector) (*Usecase, error) {
 	}, nil
 }
 
-func (u *Usecase) HandleMessageReceive(ctx context.Context, req MessageReceiveRequest) error {
+func (u *Usecase) MessageReceive(ctx context.Context, req MessageReceiveRequest) error {
 	if !req.IsRootMessage() || !req.MentionsSupportTeam() {
+		return nil
+	}
+
+	exists, err := u.larkMessageRepository.ExistsByMessageId(ctx, req.MessageId)
+	if err != nil {
+		return err
+	}
+
+	if exists {
 		return nil
 	}
 
@@ -46,14 +55,12 @@ func (u *Usecase) HandleMessageReceive(ctx context.Context, req MessageReceiveRe
 		Content:   req.Content,
 	}
 
-	created, err := u.larkMessageRepository.CreateIfNotExists(ctx, larkMessage)
+	err = u.larkMessageRepository.Create(ctx, larkMessage)
 	if err != nil {
 		return err
 	}
 
-	if created {
-		slog.InfoContext(ctx, "lark message stored", slog.String("message_id", larkMessage.MessageId))
-	}
+	slog.InfoContext(ctx, "lark message stored", slog.String("message_id", larkMessage.MessageId))
 
 	_, err = u.riverClient.Insert(ctx, jobLarkReply.Args{MessageId: larkMessage.MessageId})
 

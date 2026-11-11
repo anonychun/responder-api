@@ -2,8 +2,6 @@ package lark_message
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"uuid"
 
 	"github.com/anonychun/responder-api/internal/bootstrap"
@@ -17,7 +15,8 @@ func init() {
 }
 
 type IRepository interface {
-	CreateIfNotExists(ctx context.Context, larkMessage *entity.LarkMessage) (bool, error)
+	ExistsByMessageId(ctx context.Context, messageId string) (bool, error)
+	Create(ctx context.Context, larkMessage *entity.LarkMessage) error
 	FindByMessageId(ctx context.Context, messageId string) (*entity.LarkMessage, error)
 	MarkReplied(ctx context.Context, id uuid.UUID) error
 }
@@ -34,20 +33,13 @@ func NewRepository(i do.Injector) (*Repository, error) {
 	}, nil
 }
 
-func (r *Repository) CreateIfNotExists(ctx context.Context, larkMessage *entity.LarkMessage) (bool, error) {
-	err := r.sqlDB.DB(ctx).NewInsert().
-		Model(larkMessage).
-		On("CONFLICT (message_id) DO NOTHING").
-		Scan(ctx)
-	if errors.Is(err, sql.ErrNoRows) {
-		return false, nil
-	}
+func (r *Repository) ExistsByMessageId(ctx context.Context, messageId string) (bool, error) {
+	return r.sqlDB.DB(ctx).NewSelect().Model(&entity.LarkMessage{}).Where("message_id = ?", messageId).Exists(ctx)
+}
 
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
+func (r *Repository) Create(ctx context.Context, larkMessage *entity.LarkMessage) error {
+	_, err := r.sqlDB.DB(ctx).NewInsert().Model(larkMessage).Exec(ctx)
+	return err
 }
 
 func (r *Repository) FindByMessageId(ctx context.Context, messageId string) (*entity.LarkMessage, error) {
