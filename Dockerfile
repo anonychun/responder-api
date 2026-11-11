@@ -15,7 +15,9 @@ FROM docker.io/library/debian:trixie-slim
 WORKDIR /app
 
 RUN apt-get update -qq && \
-	apt-get install --no-install-recommends -y curl wget telnet htop vim tmux tini postgresql-client
+	apt-get install --no-install-recommends -y ca-certificates curl wget telnet htop vim tmux tini postgresql-client
+
+RUN update-ca-certificates
 
 COPY --from=build /go/bin/goreman /usr/bin/goreman
 
