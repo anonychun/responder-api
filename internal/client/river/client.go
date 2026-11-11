@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/riverqueue/river/rivertype"
 	"github.com/samber/do/v2"
 )
 
@@ -19,6 +20,7 @@ func init() {
 type IClient interface {
 	Client() *river.Client[pgx.Tx]
 	Workers() *river.Workers
+	Insert(ctx context.Context, args river.JobArgs) (*rivertype.JobInsertResult, error)
 }
 
 type Client struct {
@@ -56,4 +58,10 @@ func (c *Client) Client() *river.Client[pgx.Tx] {
 
 func (c *Client) Workers() *river.Workers {
 	return c.workers
+}
+
+func (c *Client) Insert(ctx context.Context, args river.JobArgs) (*rivertype.JobInsertResult, error) {
+	return c.riverClient.Insert(ctx, args, &river.InsertOpts{
+		UniqueOpts: river.UniqueOpts{ByArgs: true},
+	})
 }

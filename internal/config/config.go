@@ -28,6 +28,11 @@ type Config struct {
 		} `envconfig:"sql"`
 	} `envconfig:"db"`
 
+	Lark struct {
+		AppId     string `envconfig:"app_id"`
+		AppSecret string `envconfig:"app_secret"`
+	} `envconfig:"lark"`
+
 	Storage struct {
 		S3 struct {
 			Endpoint        string        `envconfig:"endpoint"`

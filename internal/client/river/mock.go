@@ -5,8 +5,11 @@
 package river
 
 import (
+	"context"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -88,6 +91,74 @@ func (_c *MockIClient_Client_Call) Return(client *river.Client[pgx.Tx]) *MockICl
 }
 
 func (_c *MockIClient_Client_Call) RunAndReturn(run func() *river.Client[pgx.Tx]) *MockIClient_Client_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Insert provides a mock function for the type MockIClient
+func (_mock *MockIClient) Insert(ctx context.Context, args river.JobArgs) (*rivertype.JobInsertResult, error) {
+	ret := _mock.Called(ctx, args)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Insert")
+	}
+
+	var r0 *rivertype.JobInsertResult
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, river.JobArgs) (*rivertype.JobInsertResult, error)); ok {
+		return returnFunc(ctx, args)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, river.JobArgs) *rivertype.JobInsertResult); ok {
+		r0 = returnFunc(ctx, args)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*rivertype.JobInsertResult)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, river.JobArgs) error); ok {
+		r1 = returnFunc(ctx, args)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockIClient_Insert_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Insert'
+type MockIClient_Insert_Call struct {
+	*mock.Call
+}
+
+// Insert is a helper method to define mock.On call
+//   - ctx context.Context
+//   - args river.JobArgs
+func (_e *MockIClient_Expecter) Insert(ctx any, args any) *MockIClient_Insert_Call {
+	return &MockIClient_Insert_Call{Call: _e.mock.On("Insert", ctx, args)}
+}
+
+func (_c *MockIClient_Insert_Call) Run(run func(ctx context.Context, args river.JobArgs)) *MockIClient_Insert_Call {
+	_c.Call.Run(func(args1 mock.Arguments) {
+		var arg0 context.Context
+		if args1[0] != nil {
+			arg0 = args1[0].(context.Context)
+		}
+		var arg1 river.JobArgs
+		if args1[1] != nil {
+			arg1 = args1[1].(river.JobArgs)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockIClient_Insert_Call) Return(jobInsertResult *rivertype.JobInsertResult, err error) *MockIClient_Insert_Call {
+	_c.Call.Return(jobInsertResult, err)
+	return _c
+}
+
+func (_c *MockIClient_Insert_Call) RunAndReturn(run func(ctx context.Context, args river.JobArgs) (*rivertype.JobInsertResult, error)) *MockIClient_Insert_Call {
 	_c.Call.Return(run)
 	return _c
 }
