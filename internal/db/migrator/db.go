@@ -1,0 +1,67 @@
+package migrator
+
+import (
+	"context"
+
+	"github.com/anonychun/responder-api/internal/bootstrap"
+	"github.com/anonychun/responder-api/internal/config"
+	"github.com/anonychun/responder-api/internal/db/internal"
+	"github.com/anonychun/responder-api/migrations"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/pressly/goose/v3"
+	"github.com/samber/do/v2"
+)
+
+func init() {
+	do.Provide(bootstrap.Injector, NewDB)
+}
+
+type IDB interface {
+	Migrate(ctx context.Context) error
+	Rollback(ctx context.Context) error
+}
+
+type DB struct {
+	pgxPool  *pgxpool.Pool
+	provider *goose.Provider
+}
+
+var _ IDB = (*DB)(nil)
+
+func NewDB(i do.Injector) (*DB, error) {
+	ctx := context.Background()
+	pgxPool, bunDB, err := internal.OpenPostgres(ctx, config.Get().DB.Sql.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	provider, err := goose.NewProvider(
+		"postgres",
+		bunDB.DB,
+		migrations.MigrationsFs,
+		goose.WithVerbose(true),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DB{
+		pgxPool:  pgxPool,
+		provider: provider,
+	}, nil
+}
+
+func (d *DB) Migrate(ctx context.Context) error {
+	_, err := d.provider.Up(ctx)
+	return err
+}
+
+func (d *DB) Rollback(ctx context.Context) error {
+	_, err := d.provider.Down(ctx)
+	return err
+}
+
+func (d *DB) Shutdown(ctx context.Context) error {
+	d.pgxPool.Close()
+	return nil
+}

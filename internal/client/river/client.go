@@ -1,0 +1,59 @@
+package river
+
+import (
+	"context"
+	"log/slog"
+
+	"github.com/anonychun/responder-api/internal/bootstrap"
+	dbSql "github.com/anonychun/responder-api/internal/db/sql"
+	"github.com/jackc/pgx/v5"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/samber/do/v2"
+)
+
+func init() {
+	do.Provide(bootstrap.Injector, NewClient)
+}
+
+type IClient interface {
+	Client() *river.Client[pgx.Tx]
+	Workers() *river.Workers
+}
+
+type Client struct {
+	riverClient *river.Client[pgx.Tx]
+	workers     *river.Workers
+}
+
+var _ IClient = (*Client)(nil)
+
+func NewClient(i do.Injector) (*Client, error) {
+	ctx := context.Background()
+	sqlDB := do.MustInvoke[*dbSql.PostgresDB](i)
+	workers := river.NewWorkers()
+
+	riverClient, err := river.NewClient(riverpgxv5.New(sqlDB.PgxPool(ctx)), &river.Config{
+		Queues: map[string]river.QueueConfig{
+			river.QueueDefault: {MaxWorkers: 100},
+		},
+		Workers: workers,
+		Logger:  slog.Default(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &Client{
+		riverClient: riverClient,
+		workers:     workers,
+	}, nil
+}
+
+func (c *Client) Client() *river.Client[pgx.Tx] {
+	return c.riverClient
+}
+
+func (c *Client) Workers() *river.Workers {
+	return c.workers
+}

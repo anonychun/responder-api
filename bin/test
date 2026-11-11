@@ -1,0 +1,16 @@
+#!/bin/bash -e
+
+set -a
+source .env
+set +a
+export DB_SQL_NAME="${DB_SQL_NAME}_test"
+
+./bin/db drop
+./bin/db create
+./bin/db migrate
+
+if [ $# -eq 0 ]; then
+	go test ./...
+else
+	go test "${@}"
+fi

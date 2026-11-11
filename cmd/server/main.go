@@ -1,0 +1,47 @@
+package main
+
+import (
+	"context"
+	"log"
+
+	"github.com/anonychun/responder-api/internal/bootstrap"
+	"github.com/anonychun/responder-api/internal/bootstrap/app"
+	"github.com/anonychun/responder-api/internal/server"
+	"github.com/samber/do/v2"
+	"github.com/urfave/cli/v3"
+	"golang.org/x/sync/errgroup"
+)
+
+func main() {
+	err := app.Setup()
+	if err != nil {
+		log.Fatalln("Failed to setup:", err)
+	}
+
+	cmd := &cli.Command{
+		Name:  "server",
+		Usage: "Manage the HTTP and gRPC servers",
+	}
+
+	cmd.Commands = []*cli.Command{
+		{
+			Name:  "start",
+			Usage: "Start the servers",
+			Action: func(ctx context.Context, c *cli.Command) error {
+				httpSrv := do.MustInvoke[*server.HttpServer](bootstrap.Injector)
+				grpcSrv := do.MustInvoke[*server.GrpcServer](bootstrap.Injector)
+
+				g, ctx := errgroup.WithContext(ctx)
+				g.Go(func() error { return httpSrv.Start(ctx) })
+				g.Go(func() error { return grpcSrv.Start(ctx) })
+
+				return g.Wait()
+			},
+		},
+	}
+
+	err = app.RunCommand(context.Background(), cmd)
+	if err != nil {
+		log.Fatalln("Failed to run command:", err)
+	}
+}

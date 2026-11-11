@@ -1,0 +1,119 @@
+package main
+
+import (
+	"context"
+	"log"
+
+	"github.com/anonychun/responder-api/internal/bootstrap"
+	"github.com/anonychun/responder-api/internal/bootstrap/app"
+	dbManager "github.com/anonychun/responder-api/internal/db/manager"
+	dbMigrator "github.com/anonychun/responder-api/internal/db/migrator"
+	dbSeeder "github.com/anonychun/responder-api/internal/db/seeder"
+	"github.com/samber/do/v2"
+	"github.com/urfave/cli/v3"
+)
+
+func main() {
+	err := app.Setup()
+	if err != nil {
+		log.Fatalln("Failed to setup:", err)
+	}
+
+	cmd := &cli.Command{
+		Name:  "db",
+		Usage: "Manage the database",
+	}
+
+	cmd.Commands = []*cli.Command{
+		{
+			Name:  "create",
+			Usage: "Create a new database",
+			Action: func(ctx context.Context, c *cli.Command) error {
+				managerDB := do.MustInvoke[*dbManager.DB](bootstrap.Injector)
+				return managerDB.CreateDatabase(ctx)
+			},
+		},
+		{
+			Name:  "drop",
+			Usage: "Drop the database",
+			Action: func(ctx context.Context, c *cli.Command) error {
+				managerDB := do.MustInvoke[*dbManager.DB](bootstrap.Injector)
+				return managerDB.DropDatabase(ctx)
+			},
+		},
+		{
+			Name:  "migrate",
+			Usage: "Apply all pending migrations",
+			Action: func(ctx context.Context, c *cli.Command) error {
+				migratorDB := do.MustInvoke[*dbMigrator.DB](bootstrap.Injector)
+				return migratorDB.Migrate(ctx)
+			},
+		},
+		{
+			Name:  "rollback",
+			Usage: "Revert the last applied migration",
+			Action: func(ctx context.Context, c *cli.Command) error {
+				migratorDB := do.MustInvoke[*dbMigrator.DB](bootstrap.Injector)
+				return migratorDB.Rollback(ctx)
+			},
+		},
+		{
+			Name:  "seed",
+			Usage: "Seed the database with initial data",
+			Action: func(ctx context.Context, c *cli.Command) error {
+				seederDB := do.MustInvoke[*dbSeeder.DB](bootstrap.Injector)
+				return seederDB.Seed(ctx)
+			},
+		},
+		{
+			Name:  "setup",
+			Usage: "Setup the database",
+			Action: func(ctx context.Context, c *cli.Command) error {
+				managerDB := do.MustInvoke[*dbManager.DB](bootstrap.Injector)
+				err := managerDB.CreateDatabase(ctx)
+				if err != nil {
+					return err
+				}
+
+				migratorDB := do.MustInvoke[*dbMigrator.DB](bootstrap.Injector)
+				err = migratorDB.Migrate(ctx)
+				if err != nil {
+					return err
+				}
+
+				seederDB := do.MustInvoke[*dbSeeder.DB](bootstrap.Injector)
+				return seederDB.Seed(ctx)
+			},
+		},
+		{
+			Name:  "reset",
+			Usage: "Reset the database",
+			Action: func(ctx context.Context, c *cli.Command) error {
+				managerDB := do.MustInvoke[*dbManager.DB](bootstrap.Injector)
+				err := managerDB.DropDatabase(ctx)
+				if err != nil {
+					return err
+				}
+
+				err = managerDB.CreateDatabase(ctx)
+				if err != nil {
+					return err
+				}
+
+				migratorDB := do.MustInvoke[*dbMigrator.DB](bootstrap.Injector)
+				err = migratorDB.Migrate(ctx)
+				if err != nil {
+					return err
+				}
+
+				seederDB := do.MustInvoke[*dbSeeder.DB](bootstrap.Injector)
+				return seederDB.Seed(ctx)
+			},
+		},
+	}
+
+	err = app.RunCommand(context.Background(), cmd)
+	if err != nil {
+		log.Fatalln("Failed to run command:", err)
+	}
+}
