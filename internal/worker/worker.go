@@ -7,7 +7,6 @@ import (
 	"github.com/anonychun/responder-api/internal/bootstrap"
 	clientLark "github.com/anonychun/responder-api/internal/client/lark"
 	clientRiver "github.com/anonychun/responder-api/internal/client/river"
-	jobHello "github.com/anonychun/responder-api/internal/job/hello"
 	jobLarkReply "github.com/anonychun/responder-api/internal/job/lark_reply"
 	usecaseLarkMessage "github.com/anonychun/responder-api/internal/usecase/lark/message"
 	"github.com/riverqueue/river"
@@ -34,13 +33,6 @@ func NewWorker(i do.Injector) (*Worker, error) {
 	riverClient := do.MustInvoke[*clientRiver.Client](i)
 
 	err := addWorkers(riverClient.Workers(),
-		do.MustInvoke[*jobHello.Job](i),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	err = addWorkers(riverClient.Workers(),
 		do.MustInvoke[*jobLarkReply.Job](i),
 	)
 	if err != nil {

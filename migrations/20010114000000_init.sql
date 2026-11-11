@@ -9,21 +9,13 @@ CREATE TABLE attachments (
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE users (
+CREATE TABLE lark_messages (
 	id UUID PRIMARY KEY DEFAULT uuidv7(),
-	name TEXT NOT NULL,
-	email_address TEXT NOT NULL UNIQUE,
-	password_digest TEXT NOT NULL,
-	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE TABLE user_sessions (
-	id UUID PRIMARY KEY DEFAULT uuidv7(),
-	user_id UUID NOT NULL REFERENCES users(id),
-	token TEXT NOT NULL UNIQUE,
-	ip_address TEXT NOT NULL,
-	user_agent TEXT NOT NULL,
+	message_id TEXT NOT NULL UNIQUE,
+	chat_id TEXT NOT NULL,
+	sender_id TEXT NOT NULL,
+	content TEXT NOT NULL,
+	replied_at TIMESTAMPTZ,
 	created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 	updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -31,9 +23,7 @@ CREATE TABLE user_sessions (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE user_sessions;
-
-DROP TABLE users;
+DROP TABLE lark_messages;
 
 DROP TABLE attachments;
 -- +goose StatementEnd

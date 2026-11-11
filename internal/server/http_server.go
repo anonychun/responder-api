@@ -9,9 +9,7 @@ import (
 	"github.com/anonychun/responder-api/internal/api"
 	"github.com/anonychun/responder-api/internal/bootstrap"
 	"github.com/anonychun/responder-api/internal/config"
-	middlewareAuth "github.com/anonychun/responder-api/internal/middleware/auth"
 	middlewareLogger "github.com/anonychun/responder-api/internal/middleware/logger"
-	usecaseApiV1AppAuth "github.com/anonychun/responder-api/internal/usecase/api/v1/app/auth"
 	usecaseHealth "github.com/anonychun/responder-api/internal/usecase/health"
 	"github.com/labstack/echo/v5"
 	"github.com/samber/do/v2"
@@ -29,10 +27,7 @@ type HttpServer struct {
 	echo   *echo.Echo
 	server *http.Server
 
-	authMiddleware   middlewareAuth.IMiddleware
 	loggerMiddleware middlewareLogger.IMiddleware
-
-	apiV1AppAuthHttpHandler usecaseApiV1AppAuth.IHttpHandler
 
 	healthHttpHandler usecaseHealth.IHttpHandler
 }
@@ -54,10 +49,7 @@ func NewHttpServer(i do.Injector) (*HttpServer, error) {
 		echo:   e,
 		server: srv,
 
-		authMiddleware:   do.MustInvoke[*middlewareAuth.Middleware](i),
 		loggerMiddleware: do.MustInvoke[*middlewareLogger.Middleware](i),
-
-		apiV1AppAuthHttpHandler: do.MustInvoke[*usecaseApiV1AppAuth.HttpHandler](i),
 
 		healthHttpHandler: do.MustInvoke[*usecaseHealth.HttpHandler](i),
 	}, nil
